@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>俄罗斯轮盘赌（霰弹枪版）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #333;
+            color: white;
+        }
+        #game {
+            margin-top: 50px;
+        }
+        .player-info, .round-info {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #ff6347;
+            color: white;
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #ff4500;
+        }
+        #result {
+            font-size: 20px;
+            margin-top: 20px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>俄罗斯轮盘赌（霰弹枪版）</h1>
+    <div id="game">
+        <div class="round-info" id="round-info">轮次: 1</div>
+        <div class="player-info" id="player-info">玩家生命值: 2</div>
+        <div class="player-info" id="dealer-info">庄家生命值: 2</div>
+        <button onclick="shoot('player')">玩家射击自己</button>
+        <button onclick="shoot('dealer')">玩家射击庄家</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let playerHealth = 2;
+        let dealerHealth = 2;
+        let round = 1;
+
+        function updateGameInfo() {
+            document.getElementById('player-info').textContent = `玩家生命值: ${playerHealth}`;
+            document.getElementById('dealer-info').textContent = `庄家生命值: ${dealerHealth}`;
+            document.getElementById('round-info').textContent = `轮次: ${round}`;
+        }
+
+        function displayResult(resultText) {
+            let resultElement = document.getElementById('result');
+            resultElement.textContent = '';  // 清空当前结果
+
+            let index = 0;
+            function addCharacter() {
+                if (index < resultText.length) {
+                    resultElement.textContent += resultText[index++];
+                    setTimeout(addCharacter, 100);  // 每个字间隔100毫秒
+                }
+            }
+            addCharacter();
+        }
+
+        function shoot(shooter) {
+            let bulletResult = Math.random() < 0.5; // 50%几率实弹
+            let resultText = '';
+
+            // 玩家射击自己
+            if (shooter === 'player') {
+                if (bulletResult) {
+                    playerHealth -= 1;
+                    resultText = '玩家射击自己：实弹！玩家失去1点生命值！';
+                } else {
+                    resultText = '玩家射击自己：空包弹！';
+                }
+
+                // 如果庄家存活，则由庄家执行AI操作
+                if (playerHealth > 0 && dealerHealth > 0) {
+                    dealerAIAction();
+                }
+            } 
+            // 玩家射击庄家
+            else if (shooter === 'dealer') {
+                if (bulletResult) {
+                    dealerHealth -= 1;
+                    resultText = '玩家射击庄家：实弹！庄家失去1点生命值！';
+                } else {
+                    resultText = '玩家射击庄家：空包弹！';
+                }
+
+                // 庄家回合结束后自动进行AI操作
+                if (playerHealth > 0 && dealerHealth > 0) {
+                    dealerAIAction();
+                }
+            }
+
+            // 显示射击结果
+            displayResult(resultText);
+
+            // 更新生命值和游戏状态
+            updateGameInfo();
+
+            // 判断游戏结束
+            if (playerHealth <= 0 || dealerHealth <= 0) {
+                setTimeout(() => {
+                    if (playerHealth <= 0) {
+                        displayResult('游戏结束！玩家输了！');
+                    } else {
+                        displayResult('游戏结束！庄家输了！');
+                    }
+                }, 1500);
+            }
+        }
+
+        function dealerAIAction() {
+            let bulletResult = Math.random() < 0.5; // AI射击时的概率
+            let resultText = '';
+
+            // 庄家AI决定是射击自己还是玩家
+            if (Math.random() < 0.5) {
+                if (bulletResult) {
+                    playerHealth -= 1;
+                    resultText = '庄家射击玩家：实弹！玩家失去1点生命值！';
+                } else {
+                    resultText = '庄家射击玩家：空包弹！';
+                }
+            } else {
+                if (bulletResult) {
+                    dealerHealth -= 1;
+                    resultText = '庄家射击自己：实弹！庄家失去1点生命值！';
+                } else {
+                    resultText = '庄家射击自己：空包弹！';
+                }
+            }
+
+            // 显示庄家AI的结果
+            displayResult(resultText);
+
+            // 更新生命值
+            updateGameInfo();
+        }
+    </script>
+</body>
+</html>
